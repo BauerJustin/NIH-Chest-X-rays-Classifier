@@ -57,7 +57,7 @@ df = pd.read_csv('preprocessed_data.csv')
 tfrlist = ['data/' + x for x in os.listdir('data')]
 file_names = tf.io.gfile.glob(tfrlist)
 
-all = list(range(len(file_names)))
+all = list(range(len(file_names)))      # To increase training time when testing modify this list to be shorter
 train_index = random.sample(all, int(len(all) * 0.7))
 test_and_validation_index = list(set(all) - set(train_index))
 valid_index = random.sample(test_and_validation_index, int(len(test_and_validation_index) * 0.5))
@@ -70,11 +70,19 @@ for elem in list(df.columns)[2:]:
     feature_description[elem] = tf.io.FixedLenFeature([], tf.int64)
 feature_description['image'] = tf.io.FixedLenFeature([], tf.string)
 
+print("Loading training data.")
 train_loader = process_loader(get_dataset(train_file_names))
+print("Training data loaded.")
+
+print("Loading validation data.")
 valid_loader = process_loader(get_dataset(valid_file_names))
+print("Validation data loaded.")
+
+print("Loading test data.")
 test_loader = process_loader(get_dataset(test_file_names))
+print("Test data loaded")
 
-
+print("Begin training...")
 
 # ALL CODE BELOW IS TEMPLATE CODE THAT WORKS WITH THE DATASET
 class SmallNet(nn.Module):
@@ -130,3 +138,5 @@ for epoch in range(num_epochs):
     train_accuracy[epoch] = get_accuracy(net, train_loader)
     validation_accuracy[epoch] = get_accuracy(net, valid_loader)
     print(f"Training accuracy: {train_accuracy[epoch]} Validation accuracy: {validation_accuracy[epoch]}")
+
+print("Training complete.")
