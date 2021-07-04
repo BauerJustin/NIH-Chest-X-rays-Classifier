@@ -10,7 +10,7 @@ import random
 import time
 
 batch_size = 1     # TODO: different batch sizes don't work right now, need to fix this
-num_epochs = 1
+num_epochs = 5
 learning_rate = 0.01
 image_size = [100, 100]
 
@@ -97,20 +97,16 @@ def get_accuracy(model, data_loader):
     total = 0
     for i, data in enumerate(data_loader):
         images, labels = data
-
         output = model(images)
-        
-        #select index with maximum prediction score
-        pred = output.max(1, keepdim=True)[1]               # TODO: only compares highest output prediction (even if it's small), need to fix this
-        correct += pred.eq(torch.max(labels, 1)[1].view_as(pred)).sum().item()
-        total += images.shape[0]
+        correct += torch.round(torch.sigmoid(output).cpu()).eq(labels).sum().item()
+        total += labels.shape[1]
     return correct / total
 
 net = SmallNet()
 if torch.cuda.is_available():
     net.cuda()
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.AdamW(net.parameters(), lr=learning_rate)
 
 train_accuracy = np.zeros(num_epochs)
@@ -128,7 +124,7 @@ for epoch in range(num_epochs):
             labels = labels.cuda()
         optimizer.zero_grad()
         output = net(images)
-        loss = criterion(output, torch.max(labels, 1)[1])
+        loss = criterion(output, labels.type_as(output))
         loss.backward()
         optimizer.step()
     train_accuracy[epoch] = get_accuracy(net, train_loader)
