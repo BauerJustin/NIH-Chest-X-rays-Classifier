@@ -106,8 +106,9 @@ def get_accuracy(model, data_loader):
     for i, data in enumerate(data_loader):
         images, labels = data
         output = model(images)
-        correct += torch.round(torch.sigmoid(output).cpu()).eq(labels).sum().item()
-        total += labels.shape[1]
+        if torch.round(torch.sigmoid(output).cpu()).eq(labels).sum().item() == 14:
+            correct += 1
+        total += 1
     return correct / total
 
 net = SmallNet()
@@ -122,9 +123,6 @@ validation_accuracy = np.zeros(num_epochs)
 
 start_time = time.time()
 for epoch in range(num_epochs):
-    total_train_loss = 0.0
-    total_train_err = 0.0
-    total_epoch = 0
     for i, data in enumerate(train_loader):
         images, labels = data
         if torch.cuda.is_available():
