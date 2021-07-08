@@ -33,7 +33,6 @@ def load_dataset(filenames):
 
 def fetch_dataset(filenames, batch_size):
     dataset = load_dataset(filenames)
-    dataset = dataset.shuffle(2048)
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     dataset = dataset.batch(batch_size)
     

@@ -1,4 +1,3 @@
-from random import sample
 import preprocessing as p
 import training as t
 import torch
@@ -7,7 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-batch_size = 25
+batch_size = 50
 num_epochs = 5
 learning_rate = 0.01
 image_size = [28, 28]

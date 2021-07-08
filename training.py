@@ -8,7 +8,7 @@ def get_accuracy(model, data_loader, batch_size):
         images, labels = data
         output = model(images)
         for i in range(batch_size):
-            if torch.round(torch.sigmoid(output[0][i]).cpu()).eq(labels[0][i]).sum().item() == 14:
+            if torch.round(torch.sigmoid(output[0][i])).eq(labels[0][i]).sum().item() == labels.size()[2]:
                 correct += 1
             total += 1
 
@@ -32,7 +32,7 @@ def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, bat
             optimizer.step()
         train_accuracy[epoch] = get_accuracy(net, train_loader, batch_size)
         validation_accuracy[epoch] = get_accuracy(net, valid_loader, batch_size)
-        print(f"Training accuracy: {train_accuracy[epoch]} Validation accuracy: {validation_accuracy[epoch]}")
+        print(f"Epoch: {epoch}, Training accuracy: {train_accuracy[epoch]}, Validation accuracy: {validation_accuracy[epoch]}")
 
     print("Training complete.")
 
