@@ -49,11 +49,13 @@ def tensorflow_to_pytorch(dataset, batch_size):
             set.append([images, labels])
     return set
 
-def get_datasets(batch_size):
+def get_datasets(batch_size, sample=False):
     tfrlist = ['data/' + x for x in os.listdir('data')]
     file_names = tf.io.gfile.glob(tfrlist)
 
-    all = list(range(len(file_names)))      # To decrease training time when testing modify this list to be shorter
+    all = list(range(len(file_names)))
+    if sample:
+        all = list(range(len(file_names))[:10])
     train_index = random.sample(all, int(len(all) * 0.7))
     test_and_validation_index = list(set(all) - set(train_index))
     valid_index = random.sample(test_and_validation_index, int(len(test_and_validation_index) * 0.5))

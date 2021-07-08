@@ -1,3 +1,4 @@
+from random import sample
 import preprocessing as p
 import training as t
 import torch
@@ -31,7 +32,7 @@ def get_image_size():
     return image_size
 
 def main():
-    train_dataset, valid_dataset, test_dataset = p.get_datasets(batch_size)
+    train_dataset, valid_dataset, test_dataset = p.get_datasets(batch_size, sample=True)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True)
     valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True)
