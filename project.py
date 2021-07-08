@@ -9,10 +9,10 @@ import pandas as pd
 import random
 import time
 
-batch_size = 1     # TODO: different batch sizes don't work right now, need to fix this
+batch_size = 25
 num_epochs = 5
 learning_rate = 0.01
-image_size = [100, 100]
+image_size = [28, 28]
 
 def read_tfrecord(example):
     example = tf.io.parse_single_example(example, feature_description)
@@ -21,7 +21,6 @@ def read_tfrecord(example):
     image = tf.cast(image, tf.float32) / 255.0
     
     label = []
-    
     for val in list(df.columns)[2:]: label.append(example[val])
 
     return image, label
@@ -43,21 +42,22 @@ def get_dataset(filenames):
     
     return dataset
 
-def process_loader(dataset):
-    loader = []
+def tensorflow_to_pytorch(dataset):
+    set = []
     for i, data in enumerate(dataset):
         images, labels = data
         images = torch.from_numpy(images.numpy()).permute(0, 3, 1, 2)
         labels = torch.from_numpy(labels.numpy())
-        loader.append([images, labels])
-    return loader
+        if images.size()[0] == batch_size:
+            set.append([images, labels])
+    return set
 
 df = pd.read_csv('preprocessed_data.csv')
 
 tfrlist = ['data/' + x for x in os.listdir('data')]
 file_names = tf.io.gfile.glob(tfrlist)
 
-all = list(range(len(file_names)))      # To increase training time when testing modify this list to be shorter
+all = list(range(len(file_names)))      # To decrease training time when testing modify this list to be shorter
 train_index = random.sample(all, int(len(all) * 0.7))
 test_and_validation_index = list(set(all) - set(train_index))
 valid_index = random.sample(test_and_validation_index, int(len(test_and_validation_index) * 0.5))
@@ -70,48 +70,54 @@ for elem in list(df.columns)[2:]:
     feature_description[elem] = tf.io.FixedLenFeature([], tf.int64)
 feature_description['image'] = tf.io.FixedLenFeature([], tf.string)
 
-print("Loading training data.")
-train_loader = process_loader(get_dataset(train_file_names))
-print("Training data loaded.")
+print("Converting training data.")
+train_dataset = tensorflow_to_pytorch(get_dataset(train_file_names))
+print("Training data converted.")
 
-print("Loading validation data.")
-valid_loader = process_loader(get_dataset(valid_file_names))
-print("Validation data loaded.")
+print("Converting validation data.")
+valid_dataset = tensorflow_to_pytorch(get_dataset(valid_file_names))
+print("Validation data converted.")
 
-print("Loading test data.")
-test_loader = process_loader(get_dataset(test_file_names))
-print("Test data loaded")
+print("Converting test data.")
+test_dataset = tensorflow_to_pytorch(get_dataset(test_file_names))
+print("Test data converted.")
+
+train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True)
+valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True)
+test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True)
 
 print("Begin training...")
-
-# ALL CODE BELOW IS TEMPLATE CODE THAT WORKS WITH THE DATASET
-class SmallNet(nn.Module):
-    def __init__(self):
-        super(SmallNet, self).__init__()
-        self.name = "small"
-        self.conv = nn.Conv2d(3, 5, 3)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.fc = nn.Linear(2880, 14)
-
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv(x)))
-        x = self.pool(x)
-        x = x.view(-1, 2880)
-        x = self.fc(x)
-        return x
 
 def get_accuracy(model, data_loader):
     correct = 0
     total = 0
-    for i, data in enumerate(data_loader):
+    for _, data in enumerate(data_loader):
         images, labels = data
         output = model(images)
-        if torch.round(torch.sigmoid(output).cpu()).eq(labels).sum().item() == 14:
-            correct += 1
-        total += 1
+        for i in range(batch_size):
+            if torch.round(torch.sigmoid(output[0][i]).cpu()).eq(labels[0][i]).sum().item() == 14:
+                correct += 1
+            total += 1
+
     return correct / total
 
-net = SmallNet()
+#Artifical Neural Network Architecture
+class ANNClassifier(nn.Module):
+    def __init__(self):
+        super(ANNClassifier, self).__init__()
+        self.layer1 = nn.Linear(28*28*3, 300)
+        self.layer2 = nn.Linear(300, 64)
+        self.layer3 = nn.Linear(64, 14)
+    def forward(self, img):
+        flattened = img.reshape(-1, 28*28*3)
+        activation1 = self.layer1(flattened)
+        activation1 = F.relu(activation1)
+        activation2 = self.layer2(activation1)
+        activation2 = F.relu(activation2)
+        activation3 = self.layer3(activation2)
+        return activation3.unsqueeze(0)
+
+net = ANNClassifier()
 if torch.cuda.is_available():
     net.cuda()
 
@@ -120,10 +126,11 @@ optimizer = optim.AdamW(net.parameters(), lr=learning_rate)
 
 train_accuracy = np.zeros(num_epochs)
 validation_accuracy = np.zeros(num_epochs)
+epochs = range(num_epochs)
 
 start_time = time.time()
 for epoch in range(num_epochs):
-    for i, data in enumerate(train_loader):
+    for _, data in enumerate(train_loader):
         images, labels = data
         if torch.cuda.is_available():
             images = images.cuda()
@@ -138,3 +145,5 @@ for epoch in range(num_epochs):
     print(f"Training accuracy: {train_accuracy[epoch]} Validation accuracy: {validation_accuracy[epoch]}")
 
 print("Training complete.")
+
+print(f"Test accuracy: {get_accuracy(net, test_loader)}")
