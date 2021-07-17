@@ -11,10 +11,9 @@ num_epochs = 5
 learning_rate = 0.01
 image_size = [28, 28]
 
-#Artifical Neural Network Architecture
-class ANNClassifier(nn.Module):
+class Baseline(nn.Module):
     def __init__(self):
-        super(ANNClassifier, self).__init__()
+        super(Baseline, self).__init__()
         self.layer1 = nn.Linear(28*28*3, 300)
         self.layer2 = nn.Linear(300, 64)
         self.layer3 = nn.Linear(64, 14)
@@ -27,6 +26,43 @@ class ANNClassifier(nn.Module):
         activation3 = self.layer3(activation2)
         return activation3.unsqueeze(0)
 
+class SimpleCNN(nn.Module):
+    def __init__(self, kernel_size = 5):
+        super(SimpleCNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 5, kernel_size)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(5, 10, kernel_size)
+        self.conv_to_fc = 10 * pow(((224-kernel_size+1)//2-kernel_size+1)//2,2)
+        self.fc1 = nn.Linear(self.conv_to_fc, 32)
+        self.fc2 = nn.Linear(32, 14)    
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, self.conv_to_fc)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+class DeepCNN(nn.Module):
+    def __init__(self, kernel_size = 5):
+        super(DeepCNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 3, kernel_size)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(3, 3, kernel_size)
+        self.conv3 = nn.Conv2d(3, 3, kernel_size)
+        self.conv_to_fc = 10 * pow(((224-kernel_size+1)//2-kernel_size+1)//2,2)
+        self.fc1 = nn.Linear(self.conv_to_fc, 32)
+        self.fc2 = nn.Linear(32, 14)    
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, self.conv_to_fc)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
 def get_image_size():
     return image_size
 
@@ -37,7 +73,7 @@ def main():
     valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True)
 
-    net = ANNClassifier()
+    net = Baseline()
     if torch.cuda.is_available():
         net.cuda()
 
