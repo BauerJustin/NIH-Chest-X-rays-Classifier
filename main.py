@@ -29,20 +29,21 @@ class Baseline(nn.Module):
 class SimpleCNN(nn.Module):
     def __init__(self, kernel_size = 5):
         super(SimpleCNN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 5, kernel_size)
+        self.conv1 = nn.Conv2d(3, 3, kernel_size)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(5, 10, kernel_size)
-        self.conv_to_fc = 10 * pow(((224-kernel_size+1)//2-kernel_size+1)//2,2)
+        self.conv2 = nn.Conv2d(3, 3, kernel_size)
+        self.conv3 = nn.Conv2d(3, 3, kernel_size)
+        self.conv_to_fc = 48
         self.fc1 = nn.Linear(self.conv_to_fc, 32)
         self.fc2 = nn.Linear(32, 14)    
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv1(x.squeeze(0))))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, self.conv_to_fc)
+        x = x.view(batch_size, self.conv_to_fc)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return x
+        return x.unsqueeze(0)
 
 class DeepCNN(nn.Module):
     def __init__(self, kernel_size = 5):
@@ -51,17 +52,17 @@ class DeepCNN(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(3, 3, kernel_size)
         self.conv3 = nn.Conv2d(3, 3, kernel_size)
-        self.conv_to_fc = 10 * pow(((224-kernel_size+1)//2-kernel_size+1)//2,2)
+        self.conv_to_fc = 48
         self.fc1 = nn.Linear(self.conv_to_fc, 32)
         self.fc2 = nn.Linear(32, 14)    
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv1(x.squeeze(0))))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, self.conv_to_fc)
+        x = x.view(batch_size, self.conv_to_fc)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return x
+        return x.unsqueeze(0)
 
 def get_image_size():
     return image_size
