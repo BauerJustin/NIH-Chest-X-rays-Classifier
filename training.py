@@ -8,9 +8,11 @@ def get_accuracy(model, data_loader, batch_size):
         images, labels = data
         output = model(images)
         for i in range(batch_size):
-            if torch.round(torch.sigmoid(output[0][i])).eq(labels[0][i]).sum().item() == labels.size()[2]:
-                correct += 1
-            total += 1
+            # if torch.round(torch.sigmoid(output[0][i])).eq(labels[0][i]).sum().item() == labels.size()[2]:
+            #     correct += 1
+            # total += 1
+            correct += torch.round(torch.sigmoid(output[0][i])).eq(labels[0][i]).sum().item()
+            total += 14
 
     return correct / total
 
