@@ -7,7 +7,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 
 batch_size = 50
-num_epochs = 5
+num_epochs = 1
 learning_rate = 0.001
 image_size = [100, 100]
 

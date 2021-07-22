@@ -22,7 +22,7 @@ def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, bat
     epochs = range(num_epochs)
 
     for epoch in range(num_epochs):
-        for _, data in enumerate(train_loader):
+        for i, data in enumerate(train_loader):
             images, labels = data
             if torch.cuda.is_available():
                 images = images.cuda()
@@ -32,6 +32,8 @@ def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, bat
             loss = criterion(output, labels.type_as(output))
             loss.backward()
             optimizer.step()
+            if i % 5 == 0:
+                print(f"Epoch: {epoch} Iteration: {i}, Training accuracy: {get_accuracy(net, train_loader, batch_size)}, Validation accuracy: {get_accuracy(net, valid_loader, batch_size)}")
         train_accuracy[epoch] = get_accuracy(net, train_loader, batch_size)
         validation_accuracy[epoch] = get_accuracy(net, valid_loader, batch_size)
         print(f"Epoch: {epoch}, Training accuracy: {train_accuracy[epoch]}, Validation accuracy: {validation_accuracy[epoch]}")
