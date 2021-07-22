@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 batch_size = 50
 num_epochs = 5
-learning_rate = 0.01
-image_size = [28, 28]
+learning_rate = 0.001
+image_size = [100, 100]
 
 class Baseline(nn.Module):
     def __init__(self):
@@ -48,17 +48,18 @@ class SimpleCNN(nn.Module):
 class DeepCNN(nn.Module):
     def __init__(self, kernel_size = 5):
         super(DeepCNN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 3, kernel_size)
+        self.conv1 = nn.Conv2d(3, 5, kernel_size, padding=1)
+        self.conv2 = nn.Conv2d(5, 5, kernel_size, padding=3)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(3, 3, kernel_size)
-        self.conv3 = nn.Conv2d(3, 3, kernel_size)
-        self.conv_to_fc = 48
+        self.conv_to_fc = 20
         self.fc1 = nn.Linear(self.conv_to_fc, 32)
-        self.fc2 = nn.Linear(32, 14)    
+        self.fc2 = nn.Linear(32, 14)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x.squeeze(0))))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = x.squeeze(0)
+        x = self.pool(F.relu(self.conv1(x)))
+        for i in range(50):
+            x = self.pool(F.relu(self.conv2(x)))
         x = x.view(batch_size, self.conv_to_fc)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
@@ -74,7 +75,7 @@ def main():
     valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True)
 
-    net = Baseline()
+    net = DeepCNN()
     if torch.cuda.is_available():
         net.cuda()
 
