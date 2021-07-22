@@ -16,6 +16,15 @@ def get_accuracy(model, data_loader, batch_size):
 
     return correct / total
 
+def get_loss(model, data_loader, criterion):
+    total_loss = 0
+    for i, data in enumerate(data_loader):
+        images, labels = data
+        output = model(images)
+        loss = criterion(output, labels.type_as(output))
+        total_loss += loss.item()
+    return total_loss / (i+1)
+
 def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, batch_size):
     train_accuracy = np.zeros(num_epochs)
     validation_accuracy = np.zeros(num_epochs)
@@ -33,10 +42,10 @@ def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, bat
             loss.backward()
             optimizer.step()
             if i % 5 == 0:
-                print(f"Epoch: {epoch} Iteration: {i}, Training accuracy: {get_accuracy(net, train_loader, batch_size)}, Validation accuracy: {get_accuracy(net, valid_loader, batch_size)}")
+                print(f"Epoch: {epoch+1} Iteration: {i}\nTraining Loss: {get_loss(net, train_loader, criterion)}, Validation Loss: {get_loss(net, valid_loader, criterion)}, Training accuracy: {get_accuracy(net, train_loader, batch_size)}, Validation accuracy: {get_accuracy(net, valid_loader, batch_size)}")
         train_accuracy[epoch] = get_accuracy(net, train_loader, batch_size)
         validation_accuracy[epoch] = get_accuracy(net, valid_loader, batch_size)
-        print(f"Epoch: {epoch}, Training accuracy: {train_accuracy[epoch]}, Validation accuracy: {validation_accuracy[epoch]}")
+        print(f"Epoch: {epoch+1}, Training accuracy: {train_accuracy[epoch]}, Validation accuracy: {validation_accuracy[epoch]}")
 
     print("Training complete.")
 
