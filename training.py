@@ -1,18 +1,14 @@
 import torch
 import numpy as np
 
-def get_accuracy(model, data_loader, batch_size):
+def get_accuracy(model, data_loader):
     correct = 0
     total = 0
     for _, data in enumerate(data_loader):
         images, labels = data
         output = model(images)
-        for i in range(batch_size):
-            # if torch.round(torch.sigmoid(output[0][i])).eq(labels[0][i]).sum().item() == labels.size()[2]:
-            #     correct += 1
-            # total += 1
-            correct += torch.round(torch.sigmoid(output[0][i])).eq(labels[0][i]).sum().item()
-            total += 14
+        correct += torch.round(torch.sigmoid(output)).eq(labels).sum().item()
+        total += labels.nelement()
 
     return correct / total
 
@@ -41,10 +37,10 @@ def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, bat
             loss = criterion(output, labels.type_as(output))
             loss.backward()
             optimizer.step()
-            if i % 5 == 0:
-                print(f"Epoch: {epoch+1} Iteration: {i}\nTraining Loss: {get_loss(net, train_loader, criterion)}, Validation Loss: {get_loss(net, valid_loader, criterion)}, Training accuracy: {get_accuracy(net, train_loader, batch_size)}, Validation accuracy: {get_accuracy(net, valid_loader, batch_size)}")
-        train_accuracy[epoch] = get_accuracy(net, train_loader, batch_size)
-        validation_accuracy[epoch] = get_accuracy(net, valid_loader, batch_size)
+            if i % 100 == 0:
+                print(f"Epoch: {epoch+1} Iteration: {i}\nTraining Loss: {get_loss(net, train_loader, criterion)}, Validation Loss: {get_loss(net, valid_loader, criterion)}, Training accuracy: {get_accuracy(net, train_loader)}, Validation accuracy: {get_accuracy(net, valid_loader)}")
+        train_accuracy[epoch] = get_accuracy(net, train_loader)
+        validation_accuracy[epoch] = get_accuracy(net, valid_loader)
         print(f"Epoch: {epoch+1}, Training accuracy: {train_accuracy[epoch]}, Validation accuracy: {validation_accuracy[epoch]}")
 
     print("Training complete.")

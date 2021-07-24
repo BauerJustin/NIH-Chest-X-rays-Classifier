@@ -8,7 +8,7 @@ import main as m
 def read_tfrecord(example):
     df = pd.read_csv('preprocessed_data.csv')
     feature_description = {}
-    for elem in list(df.columns)[2:]:
+    for elem in list(df.columns)[1:]:
         feature_description[elem] = tf.io.FixedLenFeature([], tf.int64)
     feature_description['image'] = tf.io.FixedLenFeature([], tf.string)
 
@@ -18,7 +18,9 @@ def read_tfrecord(example):
     image = tf.cast(image, tf.float32) / 255.0
     
     label = []
-    for val in list(df.columns)[2:]: label.append(example[val])
+    for val in list(df.columns)[1:]: 
+        if val == "No Finding" or val == "Atelectasis" or val == "Infiltration" or val == "Effusion":
+            label.append(example[val])
 
     return image, label
 
@@ -31,21 +33,13 @@ def load_dataset(filenames):
     
     return dataset
 
-def fetch_dataset(filenames, batch_size):
-    dataset = load_dataset(filenames)
-    dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.batch(batch_size)
-    
-    return dataset
-
-def tensorflow_to_pytorch(dataset, batch_size):
+def tensorflow_to_pytorch(dataset):
     set = []
-    for i, data in enumerate(dataset):
+    for _, data in enumerate(dataset):
         images, labels = data
-        images = torch.from_numpy(images.numpy()).permute(0, 3, 1, 2)
+        images = torch.from_numpy(images.numpy()).permute(2, 0, 1)
         labels = torch.from_numpy(labels.numpy())
-        if images.size()[0] == batch_size:
-            set.append([images, labels])
+        set.append([images, labels])
     return set
 
 def get_datasets(batch_size, sample=False):
@@ -63,15 +57,15 @@ def get_datasets(batch_size, sample=False):
     train_file_names, valid_file_names, test_file_names = [file_names[index] for index in train_index], [file_names[index] for index in valid_index], [file_names[index] for index in text_index]
 
     print("Converting training data.")
-    train_dataset = tensorflow_to_pytorch(fetch_dataset(train_file_names, batch_size), batch_size)
+    train_dataset = tensorflow_to_pytorch(load_dataset(train_file_names))
     print("Training data converted.")
 
     print("Converting validation data.")
-    valid_dataset = tensorflow_to_pytorch(fetch_dataset(valid_file_names, batch_size), batch_size)
+    valid_dataset = tensorflow_to_pytorch(load_dataset(valid_file_names))
     print("Validation data converted.")
 
     print("Converting test data.")
-    test_dataset = tensorflow_to_pytorch(fetch_dataset(test_file_names, batch_size), batch_size)
+    test_dataset = tensorflow_to_pytorch(load_dataset(test_file_names))
     print("Test data converted.")
 
     return train_dataset, valid_dataset, test_dataset

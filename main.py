@@ -52,18 +52,17 @@ class DeepCNN(nn.Module):
         self.conv2 = nn.Conv2d(5, 5, kernel_size, padding=3)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv_to_fc = 20
-        self.fc1 = nn.Linear(self.conv_to_fc, 32)
-        self.fc2 = nn.Linear(32, 14)
+        self.fc1 = nn.Linear(self.conv_to_fc, 11)
+        self.fc2 = nn.Linear(11, 4)
 
     def forward(self, x):
-        x = x.squeeze(0)
         x = self.pool(F.relu(self.conv1(x)))
         for i in range(50):
             x = self.pool(F.relu(self.conv2(x)))
         x = x.view(batch_size, self.conv_to_fc)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return x.unsqueeze(0)
+        return x
 
 def get_image_size():
     return image_size
@@ -71,9 +70,9 @@ def get_image_size():
 def main():
     train_dataset, valid_dataset, test_dataset = p.get_datasets(batch_size, sample=True)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True)
-    valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True, batch_size=batch_size, drop_last=True)
+    valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True, batch_size=batch_size, drop_last=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, shuffle=True, batch_size=batch_size, drop_last=True)
 
     net = DeepCNN()
     if torch.cuda.is_available():
@@ -96,7 +95,7 @@ def main():
     plt.ylabel("Validation Accuracy")
     plt.show()
 
-    print(f"Test accuracy: {t.get_accuracy(net, test_loader, batch_size)}")
+    print(f"Test accuracy: {t.get_accuracy(net, test_loader)}")
 
 if __name__ == "__main__":
     main()
