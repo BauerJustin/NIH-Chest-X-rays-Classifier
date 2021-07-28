@@ -21,7 +21,7 @@ def get_loss(model, data_loader, criterion):
         total_loss += loss.item()
     return total_loss / (i+1)
 
-def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, batch_size):
+def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs):
     train_accuracy = np.zeros(num_epochs)
     validation_accuracy = np.zeros(num_epochs)
     epochs = range(num_epochs)

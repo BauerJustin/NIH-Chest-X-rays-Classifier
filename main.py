@@ -81,7 +81,7 @@ def main():
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.AdamW(net.parameters(), lr=learning_rate)
 
-    train_accuracy, validation_accuracy, epochs = t.train(net, train_loader, valid_loader, criterion, optimizer, num_epochs, batch_size)
+    train_accuracy, validation_accuracy, epochs = t.train(net, train_loader, valid_loader, criterion, optimizer, num_epochs)
 
     plt.plot(epochs, train_accuracy)
     plt.title("Training Curve")

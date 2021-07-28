@@ -39,8 +39,7 @@ def tensorflow_to_pytorch(dataset):
         images, labels = data
         images = torch.from_numpy(images.numpy()).permute(2, 0, 1)
         labels = torch.from_numpy(labels.numpy())
-        if labels.sum() != 0:   # remove data that are all zero
-            if not (labels.sum() == 1 and labels[0] == 1) or random.random() < 0.34: # remove 66% of No Finding
+        if labels.sum() != 0 and (not (labels.sum() == 1 and labels[0] == 1) or random.random() < 0.34): # filter data
                 set.append([images, labels])
     return set
 
