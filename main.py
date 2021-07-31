@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 
-batch_size = 50
+batch_size = 64
 num_epochs = 1
 learning_rate = 0.001
 image_size = [100, 100]
@@ -56,11 +56,11 @@ class DeepCNN(nn.Module):
         self.fc2 = nn.Linear(11, 4)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.leaky_relu(self.conv1(x)))
         for i in range(50):
-            x = self.pool(F.relu(self.conv2(x)))
+            x = self.pool(F.leaky_relu(self.conv2(x)))
         x = x.view(batch_size, self.conv_to_fc)
-        x = F.relu(self.fc1(x))
+        x = F.leaky_relu(self.fc1(x))
         x = self.fc2(x)
         return x
 
