@@ -40,7 +40,7 @@ def tensorflow_to_pytorch(dataset):
         images = torch.from_numpy(images.numpy()).permute(2, 0, 1)
         labels = torch.from_numpy(labels.numpy())
         if labels.sum() != 0 and (not (labels.sum() == 1 and labels[0] == 1) or random.random() < 0.16): # filter data
-                set.append([images, labels])
+            set.append([images, labels])
     return set
 
 def get_datasets(sample=False):

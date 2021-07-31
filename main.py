@@ -7,7 +7,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 
 batch_size = 50
-num_epochs = 5
+num_epochs = 1
 learning_rate = 0.001
 image_size = [100, 100]
 
@@ -68,7 +68,7 @@ def get_image_size():
     return image_size
 
 def main():
-    train_dataset, valid_dataset, test_dataset = p.get_datasets(sample=True)
+    train_dataset, valid_dataset, test_dataset = p.get_datasets(sample=False)
 
     train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True, batch_size=batch_size, drop_last=True)
     valid_loader = torch.utils.data.DataLoader(valid_dataset, shuffle=True, batch_size=batch_size, drop_last=True)
