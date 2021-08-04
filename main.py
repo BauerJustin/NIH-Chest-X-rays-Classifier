@@ -87,13 +87,15 @@ def main():
     plt.title("Training Curve")
     plt.xlabel("Epochs")
     plt.ylabel("Training Accuracy")
-    plt.show()
+    plt.savefig("training.png")
+
+    plt.clf()
 
     plt.plot(epochs, validation_accuracy)
     plt.title("Validation Curve")
     plt.xlabel("Epochs")
     plt.ylabel("Validation Accuracy")
-    plt.show()
+    plt.savefig("validation.png")
 
     print(f"Test accuracy: {t.get_accuracy(net, test_loader)}")
 
