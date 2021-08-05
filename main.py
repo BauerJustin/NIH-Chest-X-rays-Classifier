@@ -14,18 +14,18 @@ image_size = [100, 100]
 class Baseline(nn.Module):
     def __init__(self):
         super(Baseline, self).__init__()
-        self.layer1 = nn.Linear(28*28*3, 300)
+        self.layer1 = nn.Linear(100*100*3, 300)
         self.layer2 = nn.Linear(300, 64)
-        self.layer3 = nn.Linear(64, 14)
+        self.layer3 = nn.Linear(64, 4)
     def forward(self, img):
-        flattened = img.reshape(-1, 28*28*3)
+        flattened = img.reshape(-1, 100*100*3)
         activation1 = self.layer1(flattened)
-        activation1 = F.relu(activation1)
+        activation1 = F.leaky_relu(activation1)
         activation2 = self.layer2(activation1)
-        activation2 = F.relu(activation2)
+        activation2 = F.leaky_relu(activation2)
         activation3 = self.layer3(activation2)
-        return activation3.unsqueeze(0)
-
+        return activation3
+    
 class SimpleCNN(nn.Module):
     def __init__(self, kernel_size = 5):
         super(SimpleCNN, self).__init__()
@@ -33,17 +33,19 @@ class SimpleCNN(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(3, 3, kernel_size)
         self.conv3 = nn.Conv2d(3, 3, kernel_size)
-        self.conv_to_fc = 48
-        self.fc1 = nn.Linear(self.conv_to_fc, 32)
-        self.fc2 = nn.Linear(32, 14)    
+        self.conv_to_fc = 1452
+        self.fc1 = nn.Linear(self.conv_to_fc, 600)
+        self.fc2 = nn.Linear(600, 32)
+        self.fc3 = nn.Linear(32, 4)    
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x.squeeze(0))))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.leaky_relu(self.conv1(x)))
+        x = self.pool(F.leaky_relu(self.conv2(x)))
         x = x.view(batch_size, self.conv_to_fc)
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x.unsqueeze(0)
+        x = F.relu(self.fc2(x))
+        x =self.fc3(x)
+        return x
 
 class DeepCNN(nn.Module):
     def __init__(self, kernel_size = 5):
