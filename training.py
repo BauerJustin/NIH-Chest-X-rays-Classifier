@@ -37,8 +37,6 @@ def train(net, train_loader, valid_loader, criterion, optimizer, num_epochs):
             loss = criterion(output, labels.type_as(output))
             loss.backward()
             optimizer.step()
-            if i % 100 == 0:
-                print(f"Epoch: {epoch+1} Iteration: {i}\nTraining Loss: {get_loss(net, train_loader, criterion)}, Validation Loss: {get_loss(net, valid_loader, criterion)}, Training accuracy: {get_accuracy(net, train_loader)}, Validation accuracy: {get_accuracy(net, valid_loader)}")
         train_accuracy[epoch] = get_accuracy(net, train_loader)
         validation_accuracy[epoch] = get_accuracy(net, valid_loader)
         print(f"Epoch: {epoch+1}\nTraining Loss: {get_loss(net, train_loader, criterion)}, Validation Loss: {get_loss(net, valid_loader, criterion)}, Training accuracy: {train_accuracy[epoch]}, Validation accuracy: {validation_accuracy[epoch]}")
